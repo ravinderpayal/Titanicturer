@@ -24,7 +24,7 @@ case class UserLoginForm(email:String, password: String)
 */
 @Singleton
 class EnterUrlController @Inject()(cc: EnterUrlControllerComponents, crawlerSupervisor: CrawlerSupervisor, scrapManager: ScrapManager)(implicit ec: ExecutionContext)
-  extends EnterUrlBaseController(cc) with play.api.i18n.I18nSupport {
+  extends EnterUrlBaseController(cc) {
 
   def get(link: String): Action[AnyContent] = Action.async { implicit request =>
     //askOpinionResourceHandler.get(request.user.id, id)
@@ -70,30 +70,6 @@ class EnterUrlController @Inject()(cc: EnterUrlControllerComponents, crawlerSupe
      scrapManager.countImageAnnotations map (a => Ok(a.toString))
 
   }
-
-  val userLoginForm = Form(
-    mapping(
-      "email" -> email,
-      "password" -> text(minLength = 8, maxLength = 20)
-    )(UserLoginForm.apply)(UserLoginForm.unapply)
-  )
-  def login = Action {implicit request=>
-    request.user match {
-      case None => Ok(views.html.login(userLoginForm))
-      case Some(x) => Redirect(routes.HomeController.index())
-    }
-  }
-
-  def loginPost = Action.async{implicit request =>
-    val formValidationResult = userLoginForm.bindFromRequest
-    formValidationResult.fold({ formWithErrors =>
-      Future.successful(BadRequest(views.html.login(formWithErrors)))
-    }, { form =>
-      userResourceHandler.login(form)
-    })
-  }
-
-
 }
 
 
